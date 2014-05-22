@@ -1,0 +1,5 @@
+.Rproj.user
+.Rhistory
+.RData
+data/UCI_HAR_Dataset.zip
+data/UCI\ HAR\ Dataset/*
