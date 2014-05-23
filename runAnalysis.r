@@ -28,28 +28,13 @@ runAnalysis <- function(dir = "./data/UCI HAR Dataset") {
     # Return error if files missing
     if(!is.null(misFiles)) stop(paste("Missing File:", misFiles, collapse = "\t"))
     
-    # Cleanup variables
-    rm(reqFiles, misFiles)
-    
     # Create vector of columns to read "numeric" and skip "NULL"
     # Limits data to mean and standard deviation
-    # Simultaneously creates vector of activity labels
     colNums <- c(1:6, 41:46, 81:86, 121:126, 161:166, 201:202, 214:215,
                   227:228, 240:241, 253:254, 266:277, 345:350, 424:429,
                   503:504, 516:517, 529:530, 542:543, 555:561)
     colRead <- rep("NULL", 561)
-    colRead[colNums] <- "character"
-    featRead <- read.table(files[2], colClasses = c("numeric", "character"))
-    featLabels <- featRead[[2]][colNums]
-    #for(i in 1:561) {
-    #    if(i %in% colNum) {
-    #        colRead[i] <- "numeric"
-    #        featLabels <- c(featLabels, featRead[i, 2])
-    #    }
-    #}
-    
-    # Cleanup variables
-    rm(colNums, featRead)
+    colRead[colNums] <- "numeric"
     
     # Combine test subjects, results, and labels
     testDat <- fread(files[3])
@@ -66,8 +51,12 @@ runAnalysis <- function(dir = "./data/UCI HAR Dataset") {
     # Bind rows from test and training results
     dat <- rbindlist(list(testDat, trainDat))
     
-    # Cleanup variables
+    # Cleanup unused tables
     rm(testDat, trainDat)
+    
+    # Create vector of activity labels for column headings
+    featRead <- read.table(files[2], colClasses = c("numeric", "character"))
+    featLabels <- featRead[[2]][colNums]
     
     # Add column headings
     setnames(dat, c("SubjectID", "ActivityID", featLabels))
@@ -80,9 +69,9 @@ runAnalysis <- function(dir = "./data/UCI HAR Dataset") {
     dat <- merge(dat, activities, by = "ActivityID", all.y = FALSE)
     
     # Re-order columns
-    datHeader <- colnames(dat)
-    setcolorder(dat, c("SubjectID", "ActivityID", "Activity", datHeader[3:81]))
+    datNames <- names(dat)
+    setcolorder(dat, c("SubjectID", "ActivityID", "Activity", datNames[3:81]))
     
-    # Return data
-    dat
+    # Return mean of dat by subject and activity
+    dat[, lapply(.SD, mean), by = c("SubjectID", "ActivityID", "Activity")]
 }
