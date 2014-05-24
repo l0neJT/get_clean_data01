@@ -1,6 +1,10 @@
-##
+## Read into data.table mean and standard deviation from the
+## UCI dataset on Human Activity Recognition
+## Appends activty names and label columns with features
+## Returns mean by activity and subject either as a data.table or
+## by writting to file specified as a CSV (returns TRUE if write successful).
 
-runAnalysis <- function(dir = "./data/UCI HAR Dataset") {
+runAnalysis <- function(dir = "./data/UCI HAR Dataset", destfile = NULL) {
     # Load libraries
     library(data.table)
     
@@ -8,14 +12,14 @@ runAnalysis <- function(dir = "./data/UCI HAR Dataset") {
     reqFiles <- c("activity_labels.txt",
                   "features.txt",
                   "test/subject_test.txt",
-                  "test/X_test.txt",
-                  "test/Y_test.txt",
+                  "test/x_test.txt",
+                  "test/y_test.txt",
                   "train/subject_train.txt",
-                  "train/X_train.txt",
-                  "train/Y_train.txt")
+                  "train/x_train.txt",
+                  "train/y_train.txt")
     
     # Check directory for required files
-    # Add found to 'files' and missing to 'misFiles'
+    # Adds found to 'files' and missing to 'misFiles'
     files <- NULL
     misFiles <- NULL
     for(f in reqFiles) {
@@ -70,8 +74,18 @@ runAnalysis <- function(dir = "./data/UCI HAR Dataset") {
     
     # Re-order columns
     datNames <- names(dat)
-    setcolorder(dat, c("SubjectID", "ActivityID", "Activity", datNames[3:81]))
+    setcolorder(dat, c("ActivityID", "Activity", "SubjectID", datNames[3:81]))
     
-    # Return mean of dat by subject and activity
-    dat[, lapply(.SD, mean), by = c("SubjectID", "ActivityID", "Activity")]
+    # Calculate mean by activity and subject
+    # Orders rows by activity then subject as ascending
+    dat <- dat[, lapply(.SD, mean), by = c("ActivityID", "Activity", "SubjectID")]
+    setkey(dat, ActivityID, Activity, SubjectID)
+    
+    # Wrtie CSV to 'destfile' if specified; returns TRUE if file
+    # written successfully, FALSE otherwise
+    # If 'destfile' not specified, return 'dat' as a data.table
+    if(!is.null(destfile)) {
+        write.csv(dat, file = destfile, row.names = FALSE)
+        return(file.exists(destfile))
+    } else dat
 }
