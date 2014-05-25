@@ -70,11 +70,7 @@ runAnalysis <- function(dir = "./data/UCI HAR Dataset", destfile = NULL) {
     setnames(activities, c("ActivityID", "Activity"))
     
     # Merge activity labels
-    dat <- merge(dat, activities, by = "ActivityID", all.y = FALSE)
-    
-    # Re-order columns
-    datNames <- names(dat)
-    setcolorder(dat, c("ActivityID", "Activity", "SubjectID", datNames[3:81]))
+    dat <- merge(activities, dat, by = "ActivityID")
     
     # Calculate mean by activity and subject
     # Orders rows by activity then subject as ascending

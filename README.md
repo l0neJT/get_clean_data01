@@ -15,5 +15,5 @@ Read into data.table mean and standard deviation from the [UCI dataset on Human 
 * Bind test and train rows into single data.table
 * Add column headings 
 * Merge activity labels
-* Re-order columns by activity and subject as ascending
+* Calculate mean by activity and subject then order as ascending
 * Write to CSV if destination file specified; return data.table otherwise
